@@ -154,7 +154,7 @@ Columnas:
 | 4 | Endpoints REST de vistas | ✅ Completado |
 | 5 | Docker + Docker Compose | ✅ Completado |
 | 6 | Tests automatizados | ✅ Completado |
-| 7 | Seguridad y hardening | ⏳ Pendiente |
+| 7 | Seguridad y hardening | ✅ Completado |
 | 8 | Swagger personalizado + entrega final | ⏳ Pendiente |
 
 ## 9. Decisiones de Arquitectura
@@ -214,3 +214,34 @@ Para correr las pruebas generando un reporte formal de código analizado:
 ```bash
 pytest tests/ --cov=app --cov-report=term-missing
 ```
+
+## 12. Seguridad
+
+Se aplicaron múltiples capas de seguridad y endurecimiento (hardening) a la API:
+
+### Medidas Implementadas
+| Medida | Dónde se aplica | Descripción |
+|---|---|---|
+| **TrustedHostMiddleware** | `app/main.py` | Evita ataques de Host Header Injection bloqueando requests que no pertenezcan a los dominios configurados en `ALLOWED_HOSTS`. |
+| **Audit Logging** | `app/main.py` | Middleware personalizado que registra métricas de requests HTTP (ruta, método, código y tiempo de respuesta en ms) sin filtrar datos sensibles. |
+| **Rate Limiting (SlowAPI)** | `app/routers/*` | Limita la cantidad de peticiones concurrentes por IP para evitar ataques DDoS y fuerza bruta. |
+| **Security Headers** | `app/main.py` | Inyección automática de cabeceras HTTP recomendadas por OWASP (Anti-XSS, No-Sniff, Frame Deny). |
+| **Input Validation & Regex** | `app/routers/views.py` | La función `validate_view_name` bloquea inyecciones usando una estricta expresión regular `^[a-zA-Z0-9_]+$`. |
+
+### Rate Limits Configurados
+- **Login (`POST /auth/login`)**: `5 requests/minuto` por IP. Esto previene eficazmente los ataques de diccionario y fuerza bruta en la autenticación.
+- **Consultas de Vistas (`/views/*`)**: `100 requests/minuto` por IP. Asegura la disponibilidad del sistema evitando que usuarios extraigan bases de datos masivas rápidamente.
+
+### Encabezados HTTP de Seguridad Activos
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Cache-Control: no-store`
+- `Strict-Transport-Security: max-age=31536000` *(solo activo si `ENVIRONMENT=production`)*
+
+> [!TIP]
+> **Recomendaciones Adicionales para Producción**
+> Para que el proyecto esté listo para un entorno productivo real, se aconseja:
+> 1. Servir la API estrictamente bajo **HTTPS/TLS** (ej. usando Nginx, Traefik o Azure Application Gateway).
+> 2. Rotar el `JWT_SECRET_KEY` periódicamente utilizando bóvedas de secretos (como Azure Key Vault o HashiCorp Vault).
+> 3. Sustituir el diccionario simulado `USERS_DB` en `dependencies.py` por una tabla real conectada al SQL Server para almacenar usuarios y contraseñas cifradas.
