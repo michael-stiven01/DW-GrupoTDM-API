@@ -149,7 +149,7 @@ Columnas:
 | Paso | Descripción | Estado |
 |---|---|---|
 | 1 | Scaffolding del proyecto | ✅ Completado |
-| 2 | Conexión SQL Server + View Service | ⏳ Pendiente |
+| 2 | Conexión SQL Server + View Service | ✅ Completado |
 | 3 | Autenticación JWT | ⏳ Pendiente |
 | 4 | Endpoints REST de vistas | ⏳ Pendiente |
 | 5 | Docker + Docker Compose | ⏳ Pendiente |
@@ -166,4 +166,4 @@ Columnas:
 - Caché en memoria para metadatos: reduce carga en INFORMATION_SCHEMA
 
 ## 10. Notas de Desarrollo
-(sección vacía por ahora, se irá llenando en cada paso)
+- **2026-05-26 (Paso 2):** Implementación de `pydantic-settings` para la configuración, y `SQLAlchemy` con `pyodbc` para conexión a SQL Server. Se definió un pool de 10 conexiones. Se desarrolló `view_service.py` con caché en memoria (TTL 5 mins) para `INFORMATION_SCHEMA` con el fin de mejorar latencias, y se aplicaron queries con parameters binding y corchetes `[ ]` para evitar SQL injection al leer vistas.
