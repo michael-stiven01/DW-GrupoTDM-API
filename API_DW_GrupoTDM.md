@@ -152,7 +152,7 @@ Columnas:
 | 2 | Conexión SQL Server + View Service | ✅ Completado |
 | 3 | Autenticación JWT | ✅ Completado |
 | 4 | Endpoints REST de vistas | ✅ Completado |
-| 5 | Docker + Docker Compose | ⏳ Pendiente |
+| 5 | Docker + Docker Compose | ✅ Completado |
 | 6 | Tests automatizados | ⏳ Pendiente |
 | 7 | Seguridad y hardening | ⏳ Pendiente |
 | 8 | Swagger personalizado + entrega final | ⏳ Pendiente |
@@ -174,3 +174,7 @@ Columnas:
 - **2026-05-26 (Paso 4):** Desarrollo de los endpoints REST para consultas a las vistas, completamente protegidos mediante la dependencia JWT.
   - **Validación robusta:** Se programó una capa de validación extra de `view_name` por medio de Expresiones Regulares (`^[a-zA-Z0-9_]+$`) que descarta strings maliciosos y los corta si exceden de 100 caracteres arrojando un 422, robusteciendo la prevención SQL Injection.
   - **Auditoría Sistemática:** Se configuró el logger nativo para registrar qué usuario consultó qué endpoint, vista, formato y cantidad de registros extraídos, lo que crea un registro histórico útil y transparente en un ambiente privado.
+- **2026-05-26 (Paso 5):** Configuración de contenedores con Docker y Docker Compose implementada.
+  - **Docker Base:** Se utilizó la imagen `python:3.11-slim` para optimizar el peso final de la imagen.
+  - **Driver ODBC:** Durante el build, el `Dockerfile` automatiza la agregación del repositorio oficial de Microsoft y la instalación del paquete nativo `msodbcsql17` para Ubuntu/Debian, requisito indispensable para la comunicación de pyodbc con SQL Server en Linux.
+  - **Workers de Uvicorn:** Se ajustó el comando final a `--workers 2`. Este criterio previene la saturación en CPUs pequeñas pero otorga el suficiente paralelismo de ASGI para manejar las transferencias asíncronas de la API y cargas de exportaciones CSV pesadas, equilibrando uso de RAM y rendimiento del contenedor.
