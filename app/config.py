@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     db_username: str
     db_password: str
     db_driver: str = "ODBC Driver 17 for SQL Server"
+    db_port: int = 1433
+    db_trust_server_certificate: bool = True
 
     # JWT
     jwt_secret_key: str
@@ -26,6 +28,14 @@ class Settings(BaseSettings):
 
     @property
     def connection_string(self) -> str:
-        return f"DRIVER={{{self.db_driver}}};SERVER={self.db_server};DATABASE={self.db_database};UID={self.db_username};PWD={self.db_password}"
+        trust_cert = "yes" if self.db_trust_server_certificate else "no"
+        return (
+            f"DRIVER={{{self.db_driver}}};"
+            f"SERVER={self.db_server},{self.db_port};"
+            f"DATABASE={self.db_database};"
+            f"UID={self.db_username};"
+            f"PWD={self.db_password};"
+            f"TrustServerCertificate={trust_cert};"
+        )
 
 settings = Settings()

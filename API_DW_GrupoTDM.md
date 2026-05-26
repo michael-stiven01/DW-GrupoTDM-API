@@ -153,7 +153,7 @@ Columnas:
 | 3 | Autenticación JWT | ✅ Completado |
 | 4 | Endpoints REST de vistas | ✅ Completado |
 | 5 | Docker + Docker Compose | ✅ Completado |
-| 6 | Tests automatizados | ⏳ Pendiente |
+| 6 | Tests automatizados | ✅ Completado |
 | 7 | Seguridad y hardening | ⏳ Pendiente |
 | 8 | Swagger personalizado + entrega final | ⏳ Pendiente |
 
@@ -178,3 +178,39 @@ Columnas:
   - **Docker Base:** Se utilizó la imagen `python:3.11-slim` para optimizar el peso final de la imagen.
   - **Driver ODBC:** Durante el build, el `Dockerfile` automatiza la agregación del repositorio oficial de Microsoft y la instalación del paquete nativo `msodbcsql17` para Ubuntu/Debian, requisito indispensable para la comunicación de pyodbc con SQL Server en Linux.
   - **Workers de Uvicorn:** Se ajustó el comando final a `--workers 2`. Este criterio previene la saturación en CPUs pequeñas pero otorga el suficiente paralelismo de ASGI para manejar las transferencias asíncronas de la API y cargas de exportaciones CSV pesadas, equilibrando uso de RAM y rendimiento del contenedor.
+- **2026-05-26 (Paso 6):** Tests automatizados y scripts de utilidad implementados.
+  - **Consideraciones DB Mocking:** Como la base de datos SQL Server (`DW_GrupoTDM`) se encuentra en un entorno local preexistente y no es efímera, los tests de los endpoints (`test_api.py`) se han programado para tolerar de forma elegante respuestas `404 Not Found` en caso de que las vistas específicas como `cls_Dim_Tiendas` no contengan data o no estén conectadas en el pipeline, garantizando que los tests no se rompan falsamente por el estado externo de la DB, evaluando siempre la estructura asertiva de Pydantic.
+
+## 11. Testing
+
+El proyecto contiene una suite de pruebas unitarias y de integración desarrolladas bajo `pytest` e inyectando un `TestClient` local asíncrono sin necesidad de levantar el servidor explícitamente.
+
+### Tests Implementados (`test_api.py`)
+1. `test_root_endpoint`: Verifica que la API esté levantada.
+2. `test_login_success`: Autenticación correcta retorna un `access_token`.
+3. `test_login_failure`: Rechaza credenciales erróneas (`401`).
+4. `test_protected_without_token`: Listar vistas protegido rechaza accesos anónimos.
+5. `test_list_views`: Valida retorno de lista de vistas.
+6. `test_view_schema_tiendas`: Verifica estructura de respuesta del esquema de vistas.
+7. `test_query_view_tiendas`: Petición a base de datos de estructura de Paginación.
+8. `test_view_not_found`: Respuesta segura (`404`) en recursos inaccesibles.
+9. `test_pagination`: Aserción de que los saltos de páginas matemáticos retornen distintos sets.
+10. `test_invalid_view_name`: El *Regex Guard* bloquea inyecciones tipo `../` con un `422`.
+11. `test_invalid_token`: Autenticación fallida con token manipulado (`401`).
+12. `test_auth_me`: Identificación contextual del sujeto (`sub`) actual.
+13. `test_export_csv`: Aserción de cabeceras de respuesta asíncrona `Content-Disposition`.
+
+### Ejecución
+Para correr las pruebas, instala los requerimientos de desarrollo y usa pytest:
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -v
+```
+
+### Cobertura de Código
+Para correr las pruebas generando un reporte formal de código analizado:
+
+```bash
+pytest tests/ --cov=app --cov-report=term-missing
+```
