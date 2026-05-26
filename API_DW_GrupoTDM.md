@@ -150,7 +150,7 @@ Columnas:
 |---|---|---|
 | 1 | Scaffolding del proyecto | ✅ Completado |
 | 2 | Conexión SQL Server + View Service | ✅ Completado |
-| 3 | Autenticación JWT | ⏳ Pendiente |
+| 3 | Autenticación JWT | ✅ Completado |
 | 4 | Endpoints REST de vistas | ⏳ Pendiente |
 | 5 | Docker + Docker Compose | ⏳ Pendiente |
 | 6 | Tests automatizados | ⏳ Pendiente |
@@ -167,3 +167,7 @@ Columnas:
 
 ## 10. Notas de Desarrollo
 - **2026-05-26 (Paso 2):** Implementación de `pydantic-settings` para la configuración, y `SQLAlchemy` con `pyodbc` para conexión a SQL Server. Se definió un pool de 10 conexiones. Se desarrolló `view_service.py` con caché en memoria (TTL 5 mins) para `INFORMATION_SCHEMA` con el fin de mejorar latencias, y se aplicaron queries con parameters binding y corchetes `[ ]` para evitar SQL injection al leer vistas.
+- **2026-05-26 (Paso 3):** Sistema de autenticación con JWT implementado.
+  - **Estructura del payload JWT:** El token incluye `sub` (username del usuario), `role`, `iat` (marca de tiempo de creación), y `exp` (marca de tiempo de expiración).
+  - **Tiempo de expiración:** Calculado según la variable `JWT_EXPIRE_MINUTES` de la configuración.
+  - **Nuevos usuarios:** En esta iteración base, el sistema usa un diccionario estático `USERS_DB` en memoria en `dependencies.py` para persistencia de credenciales. Para registrar usuarios adicionales, se debe añadir el registro en este diccionario cifrando previamente su contraseña mediante bcrypt.
