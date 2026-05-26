@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.git
+.gitignore
+README.md
+API_DW_GrupoTDM.md
+tests/
+*.egg-info
+venv/
+.vscode/
+.pytest_cache/
