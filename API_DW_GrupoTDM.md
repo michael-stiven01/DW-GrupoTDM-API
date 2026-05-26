@@ -78,17 +78,17 @@ dw_grupotdm_api/
 | ENABLE_EXPORT | Bandera para habilitar endpoint de exportación | No |
 
 ## 5. Endpoints Planificados
-| Método | Ruta | Descripción | Autenticación |
-|---|---|---|---|
-| POST | `/auth/login` | Obtiene un token JWT | No |
-| GET | `/auth/me` | Retorna la información del usuario actual | Sí |
-| GET | `/auth/verify` | Verifica si el token es válido | Sí |
-| GET | `/views/` | Lista las vistas disponibles | Sí |
-| GET | `/views/{view_name}/schema` | Obtiene el esquema/columnas de la vista | Sí |
-| GET | `/views/{view_name}` | Consulta los datos con paginación/filtros | Sí |
-| GET | `/views/{view_name}/filter` | Obtiene valores únicos para filtros | Sí |
-| POST | `/views/{view_name}/query` | Consulta compleja mediante JSON body | Sí |
-| GET | `/views/{view_name}/export` | Exporta datos de la vista a CSV/Excel | Sí |
+| Método | Ruta | Descripción | Autenticación | Estado |
+|---|---|---|---|---|
+| POST | `/auth/login` | Obtiene un token JWT | No | ✅ Implementado |
+| GET | `/auth/me` | Retorna la información del usuario actual | Sí | ✅ Implementado |
+| GET | `/auth/verify` | Verifica si el token es válido | Sí | ✅ Implementado |
+| GET | `/views/` | Lista las vistas disponibles | Sí | ✅ Implementado |
+| GET | `/views/{view_name}/schema` | Obtiene el esquema/columnas de la vista | Sí | ✅ Implementado |
+| GET | `/views/{view_name}` | Consulta los datos con paginación/filtros | Sí | ✅ Implementado |
+| GET | `/views/{view_name}/filter` | Obtiene valores únicos para filtros | Sí | ✅ Implementado |
+| POST | `/views/{view_name}/query` | Consulta compleja mediante JSON body | Sí | ✅ Implementado |
+| GET | `/views/{view_name}/export` | Exporta datos de la vista a CSV/Excel | Sí | ✅ Implementado |
 
 ## 6. Vistas Disponibles en la Base de Datos
 - cls_dim_clientes_pos
@@ -151,7 +151,7 @@ Columnas:
 | 1 | Scaffolding del proyecto | ✅ Completado |
 | 2 | Conexión SQL Server + View Service | ✅ Completado |
 | 3 | Autenticación JWT | ✅ Completado |
-| 4 | Endpoints REST de vistas | ⏳ Pendiente |
+| 4 | Endpoints REST de vistas | ✅ Completado |
 | 5 | Docker + Docker Compose | ⏳ Pendiente |
 | 6 | Tests automatizados | ⏳ Pendiente |
 | 7 | Seguridad y hardening | ⏳ Pendiente |
@@ -171,3 +171,6 @@ Columnas:
   - **Estructura del payload JWT:** El token incluye `sub` (username del usuario), `role`, `iat` (marca de tiempo de creación), y `exp` (marca de tiempo de expiración).
   - **Tiempo de expiración:** Calculado según la variable `JWT_EXPIRE_MINUTES` de la configuración.
   - **Nuevos usuarios:** En esta iteración base, el sistema usa un diccionario estático `USERS_DB` en memoria en `dependencies.py` para persistencia de credenciales. Para registrar usuarios adicionales, se debe añadir el registro en este diccionario cifrando previamente su contraseña mediante bcrypt.
+- **2026-05-26 (Paso 4):** Desarrollo de los endpoints REST para consultas a las vistas, completamente protegidos mediante la dependencia JWT.
+  - **Validación robusta:** Se programó una capa de validación extra de `view_name` por medio de Expresiones Regulares (`^[a-zA-Z0-9_]+$`) que descarta strings maliciosos y los corta si exceden de 100 caracteres arrojando un 422, robusteciendo la prevención SQL Injection.
+  - **Auditoría Sistemática:** Se configuró el logger nativo para registrar qué usuario consultó qué endpoint, vista, formato y cantidad de registros extraídos, lo que crea un registro histórico útil y transparente en un ambiente privado.
