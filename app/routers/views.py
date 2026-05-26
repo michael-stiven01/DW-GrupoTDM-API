@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.database import get_db
+from app.middleware.rate_limit import limiter
 from app.auth.dependencies import require_active_user
 from app.schemas.views import ViewInfo, ColumnInfo, PaginatedResponse, QueryBody
 from app.services import view_service
@@ -47,7 +48,9 @@ def calculate_pagination(total: int, limit: int, offset: int):
         500: {"description": "Error interno del servidor"}
     }
 )
+@limiter.limit("100/minute")
 async def list_views(
+    request: Request,
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_active_user)
 ):
@@ -68,7 +71,9 @@ async def list_views(
         500: {"description": "Error interno del servidor"}
     }
 )
+@limiter.limit("100/minute")
 async def get_view_schema(
+    request: Request,
     view_name: str = Path(..., description="Nombre de la vista"),
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_active_user)
@@ -94,7 +99,9 @@ async def get_view_schema(
         500: {"description": "Error interno del servidor"}
     }
 )
+@limiter.limit("100/minute")
 async def get_view_data(
+    request: Request,
     view_name: str = Path(..., description="Nombre de la vista"),
     limit: int = Query(100, ge=1, le=5000),
     offset: int = Query(0, ge=0),
@@ -134,6 +141,7 @@ async def get_view_data(
         500: {"description": "Error interno del servidor"}
     }
 )
+@limiter.limit("100/minute")
 async def filter_view_data(
     request: Request,
     view_name: str = Path(..., description="Nombre de la vista"),
@@ -189,7 +197,9 @@ async def filter_view_data(
         500: {"description": "Error interno del servidor"}
     }
 )
+@limiter.limit("100/minute")
 async def post_query_view(
+    request: Request,
     body: QueryBody,
     view_name: str = Path(..., description="Nombre de la vista"),
     db: Session = Depends(get_db),
@@ -244,7 +254,9 @@ async def post_query_view(
         500: {"description": "Error interno del servidor"}
     }
 )
+@limiter.limit("100/minute")
 async def export_view_data(
+    request: Request,
     view_name: str = Path(..., description="Nombre de la vista"),
     format: str = Query("json", pattern="^(json|csv)$", description="Formato de exportación ('json' o 'csv')"),
     db: Session = Depends(get_db),

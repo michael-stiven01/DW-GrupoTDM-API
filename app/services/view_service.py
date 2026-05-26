@@ -13,6 +13,13 @@ _views_cache = {
 }
 CACHE_TTL_SECONDS = 300
 
+def clear_views_cache():
+    """Limpia el caché de vistas manualmente"""
+    global _views_cache
+    _views_cache["data"] = None
+    _views_cache["timestamp"] = 0
+    logger.info("Caché de vistas invalidado manualmente.")
+
 def get_available_views(db: Session) -> List[str]:
     """Obtiene la lista de vistas disponibles en el esquema dbo"""
     global _views_cache

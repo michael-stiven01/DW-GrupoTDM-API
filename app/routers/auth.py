@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from app.schemas.auth import LoginRequest, Token, UserResponse
 from app.auth.dependencies import USERS_DB, require_active_user
 from app.auth.jwt_handler import verify_password, create_access_token
 from app.config import settings
+from app.middleware.rate_limit import limiter
 
 router = APIRouter(tags=["Auth"])
 
 @router.post("/login", response_model=Token)
-async def login(request: LoginRequest):
-    # TODO: Aplicar rate limit en Paso 7 (ej: limitando intentos fallidos para prevenir fuerza bruta)
-    
-    user = USERS_DB.get(request.username)
+@limiter.limit("5/minute")
+async def login(request: Request, login_data: LoginRequest):
+    user = USERS_DB.get(login_data.username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -18,7 +18,7 @@ async def login(request: LoginRequest):
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-    if not verify_password(request.password, user["hashed_password"]):
+    if not verify_password(login_data.password, user["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario o contraseña incorrectos",
