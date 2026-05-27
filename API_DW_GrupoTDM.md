@@ -155,7 +155,7 @@ Columnas:
 | 5 | Docker + Docker Compose | ✅ Completado |
 | 6 | Tests automatizados | ✅ Completado |
 | 7 | Seguridad y hardening | ✅ Completado |
-| 8 | Swagger personalizado + entrega final | ⏳ Pendiente |
+| 8 | Swagger personalizado + entrega final | ✅ Completado |
 
 ## 9. Decisiones de Arquitectura
 - REST sobre GraphQL: menor complejidad, adecuado para consultas de vistas
@@ -180,6 +180,7 @@ Columnas:
   - **Workers de Uvicorn:** Se ajustó el comando final a `--workers 2`. Este criterio previene la saturación en CPUs pequeñas pero otorga el suficiente paralelismo de ASGI para manejar las transferencias asíncronas de la API y cargas de exportaciones CSV pesadas, equilibrando uso de RAM y rendimiento del contenedor.
 - **2026-05-26 (Paso 6):** Tests automatizados y scripts de utilidad implementados.
   - **Consideraciones DB Mocking:** Como la base de datos SQL Server (`DW_GrupoTDM`) se encuentra en un entorno local preexistente y no es efímera, los tests de los endpoints (`test_api.py`) se han programado para tolerar de forma elegante respuestas `404 Not Found` en caso de que las vistas específicas como `cls_Dim_Tiendas` no contengan data o no estén conectadas en el pipeline, garantizando que los tests no se rompan falsamente por el estado externo de la DB, evaluando siempre la estructura asertiva de Pydantic.
+- **2026-05-26 (Paso 8):** Finalización de la arquitectura y entrega del proyecto. Se consolidaron todas las directrices de seguridad y variables de entorno. Se implementó una configuración customizada de Swagger (OpenAPI) para inyectar globalmente el botón de autorización "Bearer" y deshabilitar la vista de `/docs` cuando el ambiente marca "production". El diseño final cumple con las directrices de Clean Architecture y la separación estricta de responsabilidades (SoC).
 
 ## 11. Testing
 
@@ -245,3 +246,23 @@ Se aplicaron múltiples capas de seguridad y endurecimiento (hardening) a la API
 > 1. Servir la API estrictamente bajo **HTTPS/TLS** (ej. usando Nginx, Traefik o Azure Application Gateway).
 > 2. Rotar el `JWT_SECRET_KEY` periódicamente utilizando bóvedas de secretos (como Azure Key Vault o HashiCorp Vault).
 > 3. Sustituir el diccionario simulado `USERS_DB` en `dependencies.py` por una tabla real conectada al SQL Server para almacenar usuarios y contraseñas cifradas.
+
+## 13. Checklist de Despliegue
+- [ ] Archivo `.env` creado a partir de `.env.example` con valores reales.
+- [ ] `JWT_SECRET_KEY` establecido (mínimo 32 caracteres aleatorios, ideal 64).
+- [ ] Contraseña del usuario admin cambiada en `dependencies.py` usando el script de utilería `create_user_hash.py`.
+- [ ] Conexión SQL Server verificada localmente (`python scripts/health_check.py`).
+- [ ] ODBC Driver 17 instalado en el servidor de despliegue o máquina host.
+- [ ] Puerto 8000 (o el definido en API_PORT) abierto en firewall.
+- [ ] `ALLOWED_HOSTS` configurado con los dominios/IPs reales en `.env`.
+- [ ] `ENVIRONMENT=production` definido explícitamente en el `.env` de producción para habilitar HSTS y ocultar Swagger.
+- [ ] `POST /auth/login` probado exitosamente (retorna un `access_token` válido).
+- [ ] `GET /views/cls_Dim_Tiendas` u otra vista validada exitosamente con el token.
+- [ ] Suite de tests ejecutada en verde (`pytest tests/ -v`).
+- [ ] Imagen Docker construida sin errores (`docker compose build`).
+- [ ] Contenedor levantado de manera persistente (`docker compose up -d`) y Healthcheck marcando "healthy".
+
+## 14. Historial de Versiones
+| Versión | Fecha | Descripción |
+|---|---|---|
+| 1.0.0 | 2026-05-26 | Versión inicial de la API con autenticación JWT, consulta dinámica/genérica de vistas, seguridad implementada, dockerización y endpoint de exportación a CSV/JSON. |
