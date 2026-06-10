@@ -63,19 +63,32 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Middlewares de seguridad y logging
 # Se declaran en orden específico de ejecución: TrustedHost -> SecurityHeaders -> RateLimit(dependencias) -> Logging
 
-# CORS
-origins = [h.strip() for h in settings.allowed_hosts.split(",") if h.strip()]
+# Hosts permitidos — soporta "*" como comodín o lista separada por comas
+raw_allowed_hosts = settings.allowed_hosts.strip()
+if raw_allowed_hosts == "*":
+    allowed_hosts_list = ["*"]
+else:
+    allowed_hosts_list = [h.strip() for h in raw_allowed_hosts.split(",") if h.strip()]
+
+# CORS: usa los mismos orígenes pero con protocolo
+if "*" in allowed_hosts_list:
+    cors_origins = ["*"]
+else:
+    cors_origins = (
+        [f"http://{h}" for h in allowed_hosts_list] +
+        [f"https://{h}" for h in allowed_hosts_list]
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials="*" not in cors_origins,  # credentials=True no es compatible con origin=*
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # TrustedHostMiddleware
-if origins:
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=origins)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts_list)
 
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):

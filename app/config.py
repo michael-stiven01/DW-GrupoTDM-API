@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     api_version: str = "1.0.0"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    allowed_hosts: str = "localhost,127.0.0.1"
+    allowed_hosts: str = "*"
     environment: str = "development"
     enable_export: bool = True
 
