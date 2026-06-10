@@ -259,6 +259,7 @@ async def export_view_data(
     request: Request,
     view_name: str = Path(..., description="Nombre de la vista"),
     format: str = Query("json", pattern="^(json|csv)$", description="Formato de exportación ('json' o 'csv')"),
+    order_by: Optional[str] = Query(None, description="Columna por la cual ordenar los datos exportados"),
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_active_user)
 ):
@@ -269,7 +270,7 @@ async def export_view_data(
     export_limit = 10000
     
     try:
-        result = view_service.query_view(db, view_name, limit=export_limit)
+        result = view_service.query_view(db, view_name, limit=export_limit, order_by=order_by)
         data = result["data"]
         
         logger.info(f"AUDIT: Usuario '{current_user['username']}' exportó {len(data)} registros de la vista '{result['view']}' en formato {format}.")
