@@ -224,20 +224,41 @@ Exporta hasta **10,000 registros** de una vista en formato JSON o CSV. Ideal par
 
 **Query Params:**
 
-| Parámetro | Valores | Default |
-|---|---|---|
-| `format` | `json` o `csv` | `json` |
+| Parámetro | Valores | Default | Descripción |
+|---|---|---|---|
+| `format` | `json` o `csv` | `json` | Formato del archivo de salida |
+| `order_by` | nombre de columna | *(primera columna)* | Ordenar los datos exportados por esta columna |
 
 **Ejemplos:**
 ```
-# Exportar como CSV (listo para abrir en Excel)
+# Exportar como CSV
 GET /views/cls_Dim_Tiendas/export?format=csv
 
-# Exportar como JSON
-GET /views/cls_Dim_Tiendas/export?format=json
+# Exportar como CSV ordenado por una columna específica
+GET /views/cls_Dim_Tiendas/export?format=csv&order_by=Nombre_Bodega
+
+# Exportar como JSON ordenado
+GET /views/cls_Dim_Tiendas/export?format=json&order_by=id_bodega
 ```
 
 > 💡 **Tip en Postman:** Cuando hagas el request con `format=csv`, ve a **"Save Response" → "Save to a file"** y guárdalo con extensión `.csv`. Excel lo abrirá directamente.
+
+---
+
+## 📄 Guía de Paginación para Vistas Grandes
+
+Si una vista tiene más de 5,000 registros (el límite máximo por request), usa `offset` para navegar entre bloques de datos.
+
+**Fórmula:** `offset = (número_de_página - 1) × limit`
+
+| Página | URL de ejemplo (con `limit=5000`) |
+|---|---|
+| Página 1 | `GET /views/{vista}?limit=5000&offset=0` |
+| Página 2 | `GET /views/{vista}?limit=5000&offset=5000` |
+| Página 3 | `GET /views/{vista}?limit=5000&offset=10000` |
+| Página N | `GET /views/{vista}?limit=5000&offset=(N-1)*5000` |
+
+> 💡 El campo `pages` en cada respuesta te indica el total de páginas disponibles para el `limit` que elegiste. Úsalo como condición de parada.
 
 ---
 
